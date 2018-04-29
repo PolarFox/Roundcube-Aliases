@@ -133,7 +133,6 @@ class aliases extends rcube_plugin {
 			$table->set_row_attribs(array('id' => 'rcmrow' . $idx));
 			$table->add(null, rcmail::Q($alias['name']));
 			}
-		}
 
 		$out = $this->rc->table_output($attrib, $result, $a_show_cols, 'id');
 		$this->rc->output->add_gui_object('aliases_list', 'aliases-table');
