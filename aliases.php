@@ -67,6 +67,7 @@ class aliases extends rcube_plugin {
 		$this->register_action('plugin.aliases.delete', array($this, 'delete'));
 		$this->register_action('plugin.aliases.update_list', array($this, 'gen_js_list'));
 		$this->register_action('plugin.aliases.setup', array($this, 'init_setup'));
+		$this->register_action('plugin.aliases.enable', array($this, 'toggle_status'));
 
 		}
 
@@ -118,7 +119,8 @@ class aliases extends rcube_plugin {
 
 	function gen_list($attrib) {
 
-		$this->api->output->add_gui_object('aliases_list', 'aliases-table');
+		// define list of cols to be displayed
+		$a_show_cols = array('name');
 
 		$table = new html_table(array('id' => 'aliases-table', 'class' => 'records-table', 'cellspacing' => '0', 'cols' => 1));
 		$table->add_header(null, $this->gettext('aliases'));
@@ -131,11 +133,13 @@ class aliases extends rcube_plugin {
 			$table->set_row_attribs(array('id' => 'rcmrow' . $idx));
 			$table->add(null, rcmail::Q($alias['name']));
 			}
-
-		return html::tag('div', array('id' => 'aliases-list-filters'), $table->show());
-
 		}
 
+		$out = $this->rc->table_output($attrib, $result, $a_show_cols, 'id');
+		$this->rc->output->add_gui_object('aliases_list', 'aliases-table');
+
+		return $out;
+	}
 
 	function gen_js_list() {
 
@@ -157,7 +161,6 @@ class aliases extends rcube_plugin {
 
 	function gen_form($attrib) {
 
-		$this->include_script('jquery.maskedinput.js');
 		$this->api->output->add_label(
 			'aliases.aliasesaliasdeleteconfirm',
 			'aliases.aliasesaliasexists',
@@ -203,7 +206,7 @@ class aliases extends rcube_plugin {
 		$name = mb_strtolower(trim(rcube_utils::get_input_value('_name', rcube_utils::INPUT_POST, true)), 'UTF-8');
 		$iid = trim(rcube_utils::get_input_value('_iid', rcube_utils::INPUT_POST));
 
-		if (!preg_match('/[a-zA-Z0-9_.]/', $name)) {
+		if (!preg_match('/^[A-Za-z0-9._%+-]+$/', $name)) {
 			$this->api->output->command('display_message', $this->gettext('aliasesaliasnameerror'), 'error');
 			$this->api->output->add_script("parent.". JS_OBJECT_NAME .".aliases_update_list('update', '0', '". rcmail::Q($name) ."');");
 			$this->init_setup();
@@ -322,8 +325,19 @@ class aliases extends rcube_plugin {
 		$this->api->output->command('display_message', $this->gettext('aliasesaliasdeleted'), 'confirmation');
 		$this->api->output->add_script("parent.". JS_OBJECT_NAME .".aliases_update_list('delete', ". $ids .");");
 
-		if (isset($_GET['_framed']) || isset($_POST['_framed'])) {
-			$this->api->output->add_script("parent.". JS_OBJECT_NAME .".show_contentframe(false);");
+		$this->api->output->add_script("parent.". JS_OBJECT_NAME .".show_contentframe(false);");
+
+		}
+
+	function toggle_status() {
+
+		$this->_startup();
+
+		$driver = $this->home . '/lib/drivers/' . $this->rc->config->get('aliases_driver', 'sql').'.php';
+
+		if (!is_readable($driver)) {
+			raise_error(array('code' => 600, 'type' => 'php', 'file' => __FILE__, 'message' => "aliases plugin: Unable to open driver file $driver"), true, false);
+			return $this->gettext('aliasesinternalerror');
 			}
 		else {
 			rcmail::get_instance()->overwrite_action('plugin.aliases.edit');
@@ -331,6 +345,22 @@ class aliases extends rcube_plugin {
 			$this->init_html();
 			}
 
+		$data = array();
+		$data['goto'] = rcmail::get_instance()->user->get_username();
+		$elements = explode("@", trim($data['goto']));
+		$ids = get_input_value('_iid', RCUBE_INPUT_GET);
+		$data['address'] = $this->alias[$ids]['name'] . "@" . $elements[1];
+
+		$ret = mail_alias('toggle', $data);
+		if (!$this->check_driver_error($ret)) { return FALSE; }
+
+		$this->alias = array();
+		$this->_startup();
+
+		$this->api->output->command('display_message', $this->gettext('aliasesstatustoggled'), 'confirmation');
+		$this->api->output->add_script("parent.". JS_OBJECT_NAME .".aliases_update_list('enable', ". $ids .");");
+
+		$this->api->output->add_script("parent.". JS_OBJECT_NAME .".show_contentframe(false);");
 		}
 
 	private function _startup() {
@@ -358,7 +388,7 @@ class aliases extends rcube_plugin {
 		foreach ($data['address'] as $alias) {
 			$elements = explode("@", trim($alias['address']));
 			if ($elements[0] != "") {
-				$this->alias[] = array("name" => $elements[0]);
+				$this->alias[] = array("name" => $elements[0], "active" => $alias['active']);
 				}
 			}
 		sort($this->alias);

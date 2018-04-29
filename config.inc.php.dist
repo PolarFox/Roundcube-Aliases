@@ -33,5 +33,4 @@ $rcmail_config['aliases_sql_create'] = 'INSERT INTO alias (address, goto, domain
 
 // The SQL query used to toggle an alias status.
 $rcmail_config['aliases_sql_toggle'] = 'UPDATE alias SET active = NOT active WHERE goto = %goto AND address = %address';
-
 ?>

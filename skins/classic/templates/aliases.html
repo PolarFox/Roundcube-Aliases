@@ -44,19 +44,38 @@
 <div id="mainscreen">
 
 <div id="aliases-list">
-<div class="aliases-boxcontent">
-<roundcube:object name="aliaseslist" />
+<div id="aliaseslist-title" class="boxtitle"><roundcube:label name="aliases.aliases" /></div>
+<div class="boxlistcontent">
+<roundcube:object name="aliaseslist" id="aliases-table" class="records-table" cellspacing="0" summary="Aliases list" type="list" noheader="true" />
 </div>
 <div class="boxfooter">
 <roundcube:button command="plugin.aliases.add" type="link" title="aliases.aliasesnewalias" class="buttonPas addgroup" classAct="button addgroup" content=" " />
+<roundcube:button name="aliasmenulink" id="aliasmenulink" type="link" title="moreactions" class="button groupactions" onclick="rcmail_ui.show_popup('aliasmenu', undefined, {above:1});return false" content=" " />
 </div>
 </div>
+
+<script type="text/javascript">
+  var aliasviewsplit = new rcube_splitter({id:'aliasviewsplitter', p1: 'aliases-list', p2: 'aliases-details', orientation: 'v', relative: true, start: 215});
+  rcmail.add_onload('aliasviewsplit.init()');
+</script>
 
 <div id="aliases-details">
 <roundcube:object name="aliasesframe" id="prefs-frame" width="100%" height="100%" frameborder="0" src="/watermark.html" />
 </div>
 
 </div>
+
+<div id="aliasmenu" class="popupmenu">
+  <ul>
+    <li><roundcube:button command="plugin.aliases.enable" label="aliases.aliasesenable" classAct="active" /></li>
+    <li><roundcube:button command="plugin.aliases.delete" label="delete" classAct="active" /></li>
+    <roundcube:container name="filteroptions" id="aliasmenu" />
+  </ul>
+</div>
+
+<script type="text/javascript">
+rcube_init_mail_ui();
+</script>
 
 </body>
 </html>

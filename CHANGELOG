@@ -8,7 +8,17 @@
         * tested with RC 0.7.2
         [RELEASE]: version 0.7.2
 
+2014-09-15 Stephan Blanke <stephanblanke@users.noreply.github.com>
+	* fixed support for classic skin
+	* added support for larry skin
+	* added alias status (enabled / disabled)
+	* fixed server side email check
+	* removed unnecessary jquery.maskedinput.js
+	* tested with RoundCube 1.0.3
+	[RELEASE]: version 1.0.0
+
 2017-06-16 Gianluca Giacometti <php@gianlucagiacometti.it>
         * aliases.php: changed compatibility for RC 1.3
         * tested with RC 1.3 RC1
         [RELEASE]: version 1.3.0
+

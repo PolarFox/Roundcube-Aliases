@@ -8,6 +8,7 @@
   top: 0;
   bottom: 0;
   width: 240px;
+  border: 1px solid #999;
 }
 
 .aliases-boxcontent
@@ -28,13 +29,6 @@
   width: 100%;
   border: 1px solid #999999;
   overflow: auto;
-}
-
-#aliases-list div.boxfooter
-{
-  border: 1px solid #999999;
-  border-top: 0;
-  width: 100%;
 }
 
 #aliases-details
